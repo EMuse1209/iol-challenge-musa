@@ -44,8 +44,9 @@ const useStyles = makeStyles(({ spacing, palette, shape, breakpoints, transition
   }
 }));
 
-const SearchBar = () => {
+const SearchBar = ({filter, handleChangeFilter}) => {
   const classes = useStyles();
+
   return (
     <div className={classes.search}>
       <div className={classes.searchIcon}>
@@ -58,6 +59,8 @@ const SearchBar = () => {
           input: classes.inputInput,
         }}
         inputProps={{ 'aria-label': 'search' }}
+        value={filter}
+        onChange={handleChangeFilter}
       />
     </div>
   );

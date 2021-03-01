@@ -1,11 +1,6 @@
 import React from 'react';
 import { withStyles } from '@material-ui/core/styles';
-import Button from '@material-ui/core/Button';
-import Dialog from '@material-ui/core/Dialog';
-import MuiDialogTitle from '@material-ui/core/DialogTitle';
-import MuiDialogContent from '@material-ui/core/DialogContent';
-import MuiDialogActions from '@material-ui/core/DialogActions';
-import IconButton from '@material-ui/core/IconButton';
+import { Avatar, Dialog, DialogTitle, DialogContent, IconButton } from '@material-ui/core';
 import CloseIcon from '@material-ui/icons/Close';
 import Typography from '@material-ui/core/Typography';
 
@@ -20,61 +15,64 @@ const styles = (theme) => ({
     top: theme.spacing(1),
     color: theme.palette.grey[500],
   },
+  pokemonImage: {
+    width: theme.spacing(7),
+    height: theme.spacing(7)
+  }
 });
 
-const DialogTitle = withStyles(styles)((props) => {
+const MuiDialogTitle = withStyles(styles)((props) => {
   const { children, classes, onClose, ...other } = props;
   return (
-    <MuiDialogTitle disableTypography className={classes.root} {...other}>
+    <DialogTitle disableTypography className={classes.root} {...other}>
       <Typography variant="h6">{children}</Typography>
       {onClose ? (
         <IconButton aria-label="close" className={classes.closeButton} onClick={onClose}>
           <CloseIcon />
         </IconButton>
       ) : null}
-    </MuiDialogTitle>
+    </DialogTitle>
   );
 });
 
-const DialogContent = withStyles((theme) => ({
+const MuiDialogContent = withStyles((theme) => ({
   root: {
     padding: theme.spacing(2),
-  },
-}))(MuiDialogContent);
+  }
+}))(DialogContent);
 
-const DialogActions = withStyles((theme) => ({
+const PokemonAvatar = withStyles((theme) => ({
   root: {
-    margin: 0,
-    padding: theme.spacing(1),
-  },
-}))(MuiDialogActions);
+    width: theme.spacing(25),
+    height: theme.spacing(25),
+  }
+}))(Avatar);
 
 const PokemonDialog = ({handleClose, open, pokemonInfo}) => {
 
   return (
     <Dialog onClose={handleClose} open={open}>
-      <DialogTitle onClose={handleClose}>
+      <MuiDialogTitle onClose={handleClose}>
       {pokemonInfo.name}
-      </DialogTitle>
-      <DialogContent dividers>
+      </MuiDialogTitle>
+      <MuiDialogContent dividers>
+        <PokemonAvatar src={pokemonInfo.image} />
         <Typography gutterBottom>
-          {`Especie: `}
+          {`Especie: ${pokemonInfo.species}`}
         </Typography>
         <Typography gutterBottom>
-          Praesent commodo cursus magna, vel scelerisque nisl consectetur et. Vivamus sagittis
-          lacus vel augue laoreet rutrum faucibus dolor auctor.
+          {`Tipo/s: ${pokemonInfo.types}`}
         </Typography>
         <Typography gutterBottom>
-          Aenean lacinia bibendum nulla sed consectetur. Praesent commodo cursus magna, vel
-          scelerisque nisl consectetur et. Donec sed odio dui. Donec ullamcorper nulla non metus
-          auctor fringilla.
+          {`Habilidades: ${pokemonInfo.abilities}`}
         </Typography>
-      </DialogContent>
-      <DialogActions>
-        <Button autoFocus onClick={handleClose} color="primary">
-          Save changes
-        </Button>
-      </DialogActions>
+        <Typography gutterBottom>
+          Estadísticas:
+        </Typography>
+        <ul>
+          {pokemonInfo.stats?.map(stat => <li>{stat}</li>)}
+        </ul>
+      </MuiDialogContent>
     </Dialog>
   );
 }

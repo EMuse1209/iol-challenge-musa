@@ -55,15 +55,17 @@ const baseURL = 'https://pokeapi.co/api/v2';
 const pokemonImageURL = 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon';
 
  const MainPage = () => {
-  const [tableData, setTableData] = useState({});
+  const [tableData, setTableData] = useState([]);
+  const [tableFiltered, setTableFiltered] = useState([]);
   const [tablePage, setTablePage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(10);
   const [pokeDialogOpen, setPokeDialogOpen] = useState(false);
   const [selectedPokemon, setSelectedPokemon] = useState({});
+  const [tableFilter, setTableFilter] = useState('');
 
   const classes = useStyles();
 
-  const handleChangePage = (event, newPage) => {
+  const handleChangePage = (_, newPage) => {
     setTablePage(newPage);
   };
 
@@ -73,8 +75,11 @@ const pokemonImageURL = 'https://raw.githubusercontent.com/PokeAPI/sprites/maste
   };
 
   const handleOpenDialog = async (pokeURL) => {
-    const result = await axios.get(pokeURL);
-    setSelectedPokemon(result.data)
+    const pokemonInfo = await axios.get(pokeURL);
+    const pokemonId = pokeURL.split('/')[6];
+    const pokemonSpecies = await axios.get(`${baseURL}/pokemon-species/${pokemonId}`);
+    const pokemonImage = getImageURL(pokeURL);
+    preProcessPokemonData(pokemonInfo.data, pokemonSpecies.data, pokemonImage);
     setPokeDialogOpen(true);
   };
 
@@ -82,8 +87,32 @@ const pokemonImageURL = 'https://raw.githubusercontent.com/PokeAPI/sprites/maste
     setPokeDialogOpen(false);
   };
 
-  const getImageURL = (pokemonURL) => {
-    const pokemonId = pokemonURL.split('/')[6];
+  const handleChangeFilter = (event) => {
+    console.log(event.target.value.length);
+    if(event.target.value.length) {
+      const filteredTable = tableData.filter(row => row.name.startsWith(event.target.value));
+      setTableFiltered(filteredTable);
+    }
+    else {
+      setTableFiltered(tableData);
+    }
+    setTableFilter(event.target.value);
+  };
+
+  const preProcessPokemonData = (pokeInfo, pokeSpecies, pokeImage) => {
+    const pokemonData = {
+      name: pokeInfo.name,
+      species: pokeSpecies['genera'][5]['genus'],
+      types: pokeInfo.types.map((type) => type.type.name).join(', '),
+      abilities: pokeInfo.abilities.map((ability) => ability.ability.name).join(', '),
+      stats: pokeInfo.stats.map(stat => `${stat.stat.name}: ${stat.base_stat}`),
+      image: pokeImage
+    };
+    setSelectedPokemon(pokemonData);
+  };
+
+  const getImageURL = (pokemURL) => {
+    const pokemonId = pokemURL.split('/')[6];
     return `${pokemonImageURL}/${pokemonId}.png`;
   };
 
@@ -96,6 +125,7 @@ const pokemonImageURL = 'https://raw.githubusercontent.com/PokeAPI/sprites/maste
         }
       });
       setTableData(result.data.results);
+      setTableFiltered(result.data.results);
     }
     fetchData();
   }, []);
@@ -106,7 +136,7 @@ const pokemonImageURL = 'https://raw.githubusercontent.com/PokeAPI/sprites/maste
         classes={{ root: classes.cardHeader, title: classes.cardTitle, subheader: classes.cardSubtitle }}
         title={'Información sobre especies locales'}
         subheader={'Seleccione de la lista o filtre por nombre'}
-        action={<SearchBar/>}
+        action={<SearchBar filter={tableFilter} handleChangeFilter={handleChangeFilter}/>}
       />
       <CardContent className={classes.content}>
   
@@ -116,11 +146,11 @@ const pokemonImageURL = 'https://raw.githubusercontent.com/PokeAPI/sprites/maste
             <TableRow>
               <TableCell align='center'>Nombre</TableCell>
               <TableCell align='center'>Imágen</TableCell>
-              <TableCell align='center'>Más Información</TableCell>
+              <TableCell align='center'></TableCell>
             </TableRow>
           </TableHead>
           <TableBody>
-            { tableData.slice(tablePage * rowsPerPage, tablePage * rowsPerPage + rowsPerPage).map(row => (
+            { tableFiltered.slice(tablePage * rowsPerPage, tablePage * rowsPerPage + rowsPerPage).map(row => (
               <TableRow key={row.name}>
                 <TableCell align='center' component="th" scope="row">
                   {row.name}
@@ -141,7 +171,7 @@ const pokemonImageURL = 'https://raw.githubusercontent.com/PokeAPI/sprites/maste
             <TableRow>
               <TablePagination
                 colSpan={3}
-                count={tableData.length ? tableData.length : -1}
+                count={tableFiltered.length ? tableFiltered.length : -1}
                 rowsPerPage={rowsPerPage}
                 page={tablePage}
                 onChangePage={handleChangePage}
