@@ -1,9 +1,12 @@
 import React, { useEffect, useState } from 'react';
 import { makeStyles } from '@material-ui/core/styles';
-import {Card, Table, TableHead, TableBody, TableCell, TableRow, TableFooter, TablePagination, LinearProgress} from '@material-ui/core';
+import { Button, Card, Table, TableHead, TableBody, TableCell, TableRow, TableFooter, TablePagination, LinearProgress } from '@material-ui/core';
 import axios from 'axios';
 import CardContent from '@material-ui/core/CardContent';
 import CardHeader from '@material-ui/core/CardHeader';
+
+import SearchBar from './SearchBar';
+import PokemonDialog from './PokemonDialog';
 
 const useStyles = makeStyles(({ spacing }) => ({
   card: {
@@ -16,11 +19,13 @@ const useStyles = makeStyles(({ spacing }) => ({
     boxShadow: '0 0 20px 0 rgba(0,0,0,0.12)'
   },
   cardHeader: {
-      backgroundColor: '#FF0000',
-      borderRadius: spacing(2),
-      margin: `-40px auto 0`,
-      width: '88%',
-      boxShadow: '0 2px 4px -2px rgba(0,0,0,0.24), 0 4px 24px -2px rgba(0, 0, 0, 0.2)'
+    backgroundColor: '#FF0000',
+    borderRadius: spacing(2),
+    margin: `-40px auto 0`,
+    width: '88%',
+    boxShadow: '0 2px 4px -2px rgba(0,0,0,0.24), 0 4px 24px -2px rgba(0, 0, 0, 0.2)',
+    display: 'flex',
+    flexFlow: 'row wrap'
   },
   cardTitle: {
     fontWeight: 'bold',
@@ -43,9 +48,6 @@ const useStyles = makeStyles(({ spacing }) => ({
   },
   progressColorBar1: {
     backgroundColor: '#CC0000'
-  },
-  progressColorBar2: {
-    backgroundColor: '#FF0000'
   }
 }));
 
@@ -54,8 +56,10 @@ const pokemonImageURL = 'https://raw.githubusercontent.com/PokeAPI/sprites/maste
 
  const MainPage = () => {
   const [tableData, setTableData] = useState({});
-  const [tablePage, setTablePage] = React.useState(0);
-  const [rowsPerPage, setRowsPerPage] = React.useState(10);
+  const [tablePage, setTablePage] = useState(0);
+  const [rowsPerPage, setRowsPerPage] = useState(10);
+  const [pokeDialogOpen, setPokeDialogOpen] = useState(false);
+  const [selectedPokemon, setSelectedPokemon] = useState({});
 
   const classes = useStyles();
 
@@ -68,9 +72,18 @@ const pokemonImageURL = 'https://raw.githubusercontent.com/PokeAPI/sprites/maste
     setTablePage(0);
   };
 
+  const handleOpenDialog = async (pokeURL) => {
+    const result = await axios.get(pokeURL);
+    setSelectedPokemon(result.data)
+    setPokeDialogOpen(true);
+  };
+
+  const handleCloseDialog = () => {
+    setPokeDialogOpen(false);
+  };
+
   const getImageURL = (pokemonURL) => {
     const pokemonId = pokemonURL.split('/')[6];
-    console.log(pokemonId)
     return `${pokemonImageURL}/${pokemonId}.png`;
   };
 
@@ -87,14 +100,13 @@ const pokemonImageURL = 'https://raw.githubusercontent.com/PokeAPI/sprites/maste
     fetchData();
   }, []);
 
-  console.log(tableData);
-
   return (
     <Card className={classes.card}>
       <CardHeader
         classes={{ root: classes.cardHeader, title: classes.cardTitle, subheader: classes.cardSubtitle }}
         title={'Información sobre especies locales'}
         subheader={'Seleccione de la lista o filtre por nombre'}
+        action={<SearchBar/>}
       />
       <CardContent className={classes.content}>
   
@@ -102,21 +114,26 @@ const pokemonImageURL = 'https://raw.githubusercontent.com/PokeAPI/sprites/maste
         <Table>
           <TableHead>
             <TableRow>
-              <TableCell>Nombre</TableCell>
-              <TableCell align="right">Imágen</TableCell>
-              <TableCell align="right">Más Información</TableCell>
+              <TableCell align='center'>Nombre</TableCell>
+              <TableCell align='center'>Imágen</TableCell>
+              <TableCell align='center'>Más Información</TableCell>
             </TableRow>
           </TableHead>
           <TableBody>
             { tableData.slice(tablePage * rowsPerPage, tablePage * rowsPerPage + rowsPerPage).map(row => (
               <TableRow key={row.name}>
-                <TableCell component="th" scope="row">
+                <TableCell align='center' component="th" scope="row">
                   {row.name}
                 </TableCell>
-                <TableCell align="right">
+                <TableCell align='center'>
                   <img alt={row.name} src={getImageURL(row.url)} />
                 </TableCell>
-                <TableCell align="right">{row.url}</TableCell>
+                <TableCell align='center'>
+                  <Button variant='contained' onClick={() => handleOpenDialog(row.url)}>
+                    Más Info.
+                  </Button>
+                  <PokemonDialog handleClose={handleCloseDialog} open={pokeDialogOpen} pokemonInfo={selectedPokemon} />
+                </TableCell>
               </TableRow> ))
             }
           </TableBody>
@@ -136,7 +153,7 @@ const pokemonImageURL = 'https://raw.githubusercontent.com/PokeAPI/sprites/maste
         </Table>
       ) : (
         <div className={classes.progress}>
-          <LinearProgress variant='indeterminate' classes={{bar1Indeterminate: classes.progressColorBar1, bar2Indeterminate: classes.progressColorBar2}}/>
+          <LinearProgress variant='indeterminate' classes={{bar1Indeterminate: classes.progressColorBar1}}/>
         </div>
       )}
           
