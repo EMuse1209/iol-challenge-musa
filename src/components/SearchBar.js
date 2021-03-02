@@ -3,7 +3,9 @@ import { InputBase } from '@material-ui/core';
 import { makeStyles, fade } from '@material-ui/core/styles';
 import SearchIcon from '@material-ui/icons/SearchRounded';
 
-const useStyles = makeStyles(({ spacing, palette, shape, breakpoints, transitions }) => ({
+const useStyles = makeStyles(({
+  spacing, palette, shape, breakpoints, transitions,
+}) => ({
   search: {
     position: 'relative',
     borderRadius: shape.borderRadius,
@@ -40,11 +42,11 @@ const useStyles = makeStyles(({ spacing, palette, shape, breakpoints, transition
     width: '100%',
     [breakpoints.up('md')]: {
       width: '20ch',
-    }
-  }
+    },
+  },
 }));
 
-const SearchBar = ({filter, handleChangeFilter}) => {
+const SearchBar = ({ filter, handleChangeFilter }) => {
   const classes = useStyles();
 
   return (

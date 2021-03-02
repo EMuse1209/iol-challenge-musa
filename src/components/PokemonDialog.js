@@ -14,10 +14,6 @@ const styles = (theme) => ({
     right: theme.spacing(1),
     top: theme.spacing(1),
     color: theme.palette.grey[500],
-  },
-  pokemonImage: {
-    width: theme.spacing(7),
-    height: theme.spacing(7)
   }
 });
 
@@ -38,6 +34,8 @@ const MuiDialogTitle = withStyles(styles)((props) => {
 const MuiDialogContent = withStyles((theme) => ({
   root: {
     padding: theme.spacing(2),
+    display: 'flex',
+    flexDirection: 'column'
   }
 }))(DialogContent);
 
@@ -45,11 +43,11 @@ const PokemonAvatar = withStyles((theme) => ({
   root: {
     width: theme.spacing(25),
     height: theme.spacing(25),
+    alignSelf: 'center'
   }
 }))(Avatar);
 
 const PokemonDialog = ({handleClose, open, pokemonInfo}) => {
-
   return (
     <Dialog onClose={handleClose} open={open}>
       <MuiDialogTitle onClose={handleClose}>
